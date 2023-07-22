@@ -1,5 +1,4 @@
-DELIMITER $$
-CREATE DEFINER=`` PROCEDURE `csvImpTodb`()
+
 BEGIN
 
     DECLARE i INT DEFAULT 0;
@@ -176,5 +175,4 @@ BEGIN
                 VALUES (ftID, ModuleID_v, feeTypeId, fname, new_amount_cfc, braId, crdr_v);
             END IF;
     END WHILE;
-    END$$
-DELIMITER ;
+    END
