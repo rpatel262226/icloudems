@@ -18,7 +18,7 @@ return new class extends Migration
             $table->bigInteger('fee_category');
             $table->string('f_name');
             $table->bigInteger('Collection_id');
-            $table->bigInteger('br_id');
+            $table->unsignedBigInteger('br_id');
             $table->bigInteger('Seq_id');
             $table->string('Fee_type_ledger');
             $table->bigInteger('Fee_headtype');

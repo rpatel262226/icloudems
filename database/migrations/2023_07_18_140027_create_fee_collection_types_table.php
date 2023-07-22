@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('collectionhead');
             $table->longText('collectiondesc');
-            $table->bigInteger('br_id');
+            $table->unsignedBigInteger('br_id');
             $table->timestamps();
             $table->index(['collectionhead','br_id']);
             $table->foreign('br_id')->references('id')->on('branches')->onDelete('cascade');

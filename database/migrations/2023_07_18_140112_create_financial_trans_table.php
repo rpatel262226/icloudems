@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('acadYear');
             $table->integer('Entrymode');
             $table->bigInteger('voucherno');
-            $table->bigInteger('brid');
+            $table->unsignedBigInteger('brid');
             $table->bigInteger('type_of_concession')->nullable();            
             $table->timestamps();
             $table->index(['admno','crdr','Entrymode','brid']);

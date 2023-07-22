@@ -16,10 +16,12 @@ return new class extends Migration
         Schema::create('fee_categories', function (Blueprint $table) {
             $table->id();
             $table->string('fee_category');
-            $table->bigInteger('br_id');
-            $table->timestamps();
+            $table->unsignedBigInteger('br_id');
             $table->index(['br_id']);
             $table->foreign('br_id')->references('id')->on('branches')->onDelete('cascade');
+            $table->timestamps();
+
+            
 
         });
     }

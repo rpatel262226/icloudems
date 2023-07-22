@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('admno');
             $table->string('rollno');	
             $table->decimal('amount', 65, 2);
-            $table->bigInteger('brId');
+            $table->unsignedBigInteger('brId');
             $table->string('acadamicYear');
             $table->string('financialYear');
             $table->string('displayReceiptNo');
