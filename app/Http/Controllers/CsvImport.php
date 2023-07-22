@@ -91,7 +91,7 @@ class CsvImport extends Controller
         
        
         try {
-            $chunkSize = 500;
+            $chunkSize = 200;
             
             foreach (array_chunk($Insdata, $chunkSize) as $chunk) {
                 CsvTemp::insert($chunk);
