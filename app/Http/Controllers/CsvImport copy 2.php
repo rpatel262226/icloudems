@@ -95,9 +95,8 @@ class CsvImport extends Controller
             
             foreach (array_chunk($Insdata, $chunkSize) as $chunk) {
                 CsvTemp::insert($chunk);
-                $callProc = DB::select('call csvImpTodb()');
-                DB::table('csv_temp')->delete();
             }
+            $callProc = DB::select('call csvImpTodb()');
             echo "ok";
           } catch (Exception $e) {
             return json_encode($e);
