@@ -1,0 +1,180 @@
+DELIMITER $$
+CREATE DEFINER=`` PROCEDURE `csvImpTodb`()
+BEGIN
+
+    DECLARE i INT DEFAULT 0;
+    DECLARE n INT DEFAULT 0;
+    
+   
+    DECLARE date_v VARCHAR(255);
+    DECLARE academic_year_v VARCHAR(255);
+    DECLARE session_v VARCHAR(255);
+    DECLARE voucher_type_v VARCHAR(255);
+    DECLARE voucher_no_v VARCHAR(255);
+    DECLARE roll_no_v VARCHAR(255);
+    DECLARE admno_v VARCHAR(255);
+    DECLARE fee_category_v VARCHAR(255);
+    DECLARE faculty_v	VARCHAR(255); 
+    DECLARE receipt_no_v VARCHAR(255);
+    DECLARE fee_head_v VARCHAR(255);
+    DECLARE due_amount_v DECIMAL(65,2);
+    DECLARE paid_amount_v DECIMAL(65,2);
+    DECLARE concession_amount_v DECIMAL(65,2);
+    DECLARE scholarship_amount_v DECIMAL(65,2);
+    DECLARE reverse_concession_amount_v DECIMAL(65,2);
+    DECLARE write_off_amount_v DECIMAL(65,2);
+    DECLARE adjusted_amount_v DECIMAL(65,2);
+    DECLARE refund_amount_v DECIMAL(65,2);
+    DECLARE fund_tranCfer_amount_v DECIMAL(65,2);
+  
+
+    DECLARE braDatCount INT DEFAULT 0;
+    DECLARE braId INT DEFAULT 0;
+
+    DECLARE feeCatCount INT DEFAULT 0;
+    DECLARE feeCatId INT DEFAULT 0;
+
+    DECLARE feeCallCount INT DEFAULT 0;
+    DECLARE feeCallId INT DEFAULT 0;
+    DECLARE fee_coll_type VARCHAR(255);
+
+    
+    DECLARE ModuleID_v INT DEFAULT 0;
+
+    DECLARE feeTypeCount INT DEFAULT 0;
+    DECLARE feeTypeId INT DEFAULT 0;
+    DECLARE fname VARCHAR(255);
+
+    DECLARE additional_for_concessionct_v INT DEFAULT 0;
+    DECLARE crdr_v VARCHAR(255);
+    DECLARE entry_mode_v VARCHAR(255);
+    DECLARE table_for_entry_v VARCHAR(255);
+    DECLARE additional_for_actInact_v INT DEFAULT 0;
+
+
+
+
+    DECLARE coFeeCollCount INT DEFAULT 0;
+    DECLARE coFeeCollId INT DEFAULT 0;
+    DECLARE amount_cfc DECIMAL(65,2) DEFAULT 0;
+    DECLARE entry_mode_name_v VARCHAR(255);
+    DECLARE new_amount_cfc DECIMAL(65,2) DEFAULT 0;
+    DECLARE sum_amount_cfc DECIMAL(65,2) DEFAULT 0;
+
+  
+    DECLARE ftCount INT DEFAULT 0;
+    DECLARE ftID INT DEFAULT 0;
+     DECLARE sum_amount_ft DECIMAL(65,2) DEFAULT 0;
+     DECLARE amount_ft DECIMAL(65,2) DEFAULT 0;
+
+    SELECT COUNT(*) FROM csv_temp INTO n;
+
+    WHILE i < n DO
+        SELECT date_c,academic_year_c,session_c,voucher_type_c,voucher_no_c,roll_no_c,admno_c,fee_category_c,faculty_c,receipt_no_c,fee_head_c,due_amount_c,paid_amount_c,concession_amount_c,scholarship_amount_c,reverse_concession_amount_c,write_off_amount_c,adjusted_amount_c,refund_amount_c,fund_tranCfer_amount_c INTO date_v,academic_year_v,session_v,voucher_type_v,voucher_no_v,roll_no_v,admno_v,fee_category_v,faculty_v,receipt_no_v,fee_head_v,due_amount_v,paid_amount_v,concession_amount_v,scholarship_amount_v,reverse_concession_amount_v,write_off_amount_v,adjusted_amount_v,refund_amount_v,fund_tranCfer_amount_v FROM csv_temp limit i,1;
+        SET i = i + 1;
+        
+        
+        SELECT COUNT(*) FROM branches WHERE branch_name COLLATE utf8mb4_unicode_ci = faculty_v INTO braDatCount;
+        IF braDatCount > 0 THEN
+            SELECT id FROM branches WHERE branch_name COLLATE utf8mb4_unicode_ci = faculty_v INTO braId;
+        ELSE
+            INSERT INTO branches (branch_name) VALUES (faculty_v);
+            SET braId = LAST_INSERT_ID();
+        END IF;
+
+        
+        SELECT COUNT(*) FROM fee_categories WHERE fee_category COLLATE utf8mb4_unicode_ci = fee_category_v AND br_id = braId INTO feeCatCount;
+        IF feeCatCount > 0 THEN
+            SELECT id FROM fee_categories WHERE fee_category COLLATE utf8mb4_unicode_ci = fee_category_v AND br_id = braId INTO feeCatId;
+        ELSE
+            INSERT INTO fee_categories (fee_category,br_id) VALUES (fee_category_v,braId);
+            SET feeCatId = LAST_INSERT_ID();
+        END IF;
+
+       
+            SELECT CASE
+            WHEN LOCATE('FINE', fee_head_v) > 0 THEN 'Academic Misc'
+            WHEN LOCATE('CONCESSION', fee_head_v) > 0 THEN 'Academic Misc'
+            WHEN LOCATE('MESS', fee_head_v) > 0 THEN 'Hostel'
+            ELSE 'Academic'
+            END INTO fee_coll_type;
+
+            SELECT COUNT(*) FROM fee_collection_types WHERE collectionhead COLLATE utf8mb4_unicode_ci = fee_coll_type AND br_id = braId INTO feeCallCount;
+            IF feeCallCount > 0 THEN
+                SELECT id FROM fee_collection_types WHERE collectionhead COLLATE utf8mb4_unicode_ci = fee_coll_type AND br_id = braId INTO feeCallId;
+            ELSE
+                INSERT INTO fee_collection_types (collectionhead, collectiondesc, br_id) VALUES
+                ('Academic', 'Academic', braId),
+                ('Academic Misc', 'Academic Misc', braId),
+                ('Hostel', 'Hostel', braId),
+                ('Hostel Misc', 'Hostel Misc', braId),
+                ('Transport', 'Transport', braId),
+                ('Transport Misc', 'Transport Misc', braId);
+
+                SELECT id FROM fee_collection_types WHERE collectionhead COLLATE utf8mb4_unicode_ci = fee_coll_type AND br_id = braId INTO feeCallId;
+                
+            END IF;
+
+          
+            SELECT ModuleID FROM modules WHERE module COLLATE utf8mb4_unicode_ci = fee_coll_type INTO ModuleID_v;
+
+      
+            SELECT COUNT(*) FROM fee_types WHERE f_name COLLATE utf8mb4_unicode_ci = fee_head_v AND br_id = braId INTO feeTypeCount;
+            IF feeTypeCount > 0 THEN
+                SELECT id,f_name INTO feeTypeId,fname FROM fee_types WHERE f_name COLLATE utf8mb4_unicode_ci = fee_head_v AND br_id = braId;
+            ELSE
+                INSERT INTO fee_types (fee_category, f_name, Collection_id, Fee_type_ledger, Fee_headtype, Seq_id, br_id) VALUES (feeCatId,fee_head_v, feeCallId, fee_head_v, ModuleID_v, 1, braId);
+                SELECT id,f_name INTO feeTypeId,fname FROM fee_types WHERE f_name COLLATE utf8mb4_unicode_ci = fee_head_v AND br_id = braId;
+            END IF;
+
+         
+
+            SELECT
+            entry_mode_name,additional_for_concessionct,crdr,entry_mode,table_for_entry,additional_for_actInact, 
+            CASE
+                WHEN entry_mode_name = 'CONCESSION' AND csv_row_num = 19 THEN concession_amount_v
+                WHEN entry_mode_name = 'DUE' AND csv_row_num = 17 THEN due_amount_v
+                WHEN entry_mode_name = 'REVDUE' AND csv_row_num = 22 THEN write_off_amount_v
+                WHEN (entry_mode_name = 'REVCONCESSION' OR entry_mode_name = 'REVSCHOLARSHIP') AND csv_row_num = 21 THEN reverse_concession_amount_v
+                WHEN entry_mode_name = 'SCHOLARSHIP' AND csv_row_num = 20 THEN scholarship_amount_v
+                WHEN (entry_mode_name = 'RCPT' OR entry_mode_name = 'REVRCPT') AND csv_row_num = 18 THEN paid_amount_v
+                WHEN entry_mode_name = 'FUNDTRANSFER' AND csv_row_num = 25 THEN fund_tranCfer_amount_v
+                WHEN (entry_mode_name = 'PMT' OR entry_mode_name = 'REVPMT') AND csv_row_num = 24 THEN refund_amount_v
+                WHEN (entry_mode_name = 'JV' OR entry_mode_name = 'REVJV') AND csv_row_num = 23 THEN adjusted_amount_v
+                ELSE paid_amount_v
+            END INTO entry_mode_name_v,additional_for_concessionct_v,crdr_v,entry_mode_v,table_for_entry_v,additional_for_actInact_v,new_amount_cfc FROM entry_modes WHERE entry_mode_name COLLATE utf8mb4_unicode_ci = voucher_type_v;
+            
+            IF table_for_entry_v = 'common_fee_collections' THEN
+               
+                SELECT COUNT(*) FROM common_fee_collections WHERE rollno COLLATE utf8mb4_unicode_ci = roll_no_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v INTO coFeeCollCount;
+                IF coFeeCollCount > 0 THEN
+                    SELECT id , amount INTO coFeeCollId,amount_cfc FROM common_fee_collections WHERE rollno COLLATE utf8mb4_unicode_ci = roll_no_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v;
+                    SET sum_amount_cfc = amount_cfc + new_amount_cfc;
+                    UPDATE common_fee_collections SET amount = sum_amount_cfc WHERE id = coFeeCollId;
+                ELSE
+                    INSERT INTO common_fee_collections (moduleId, transId, admno, rollno, amount, brId, acadamicYear, financialYear, displayReceiptNo, Entrymode, PaidDate, inactive)
+                    VALUES (ModuleID_v, 1, admno_v, roll_no_v, new_amount_cfc, braId, academic_year_v,session_v,receipt_no_v , entry_mode_v, date_v, additional_for_actInact_v);
+                    SELECT id,amount INTO coFeeCollId,amount_cfc FROM common_fee_collections WHERE rollno COLLATE utf8mb4_unicode_ci = roll_no_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v;
+                END IF;
+                INSERT INTO common_fee_collection_headwises (moduleId, receiptId, headId, headName, amount, brid) VALUES(ModuleID_v,coFeeCollId,feeTypeId,fname, new_amount_cfc,braId);
+            
+            END IF;
+
+            IF table_for_entry_v = 'financial_trans' THEN
+                SELECT COUNT(*) FROM financial_trans WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v INTO ftCount;
+                
+                IF ftCount > 0 THEN
+                    SELECT id , amount INTO ftID,amount_ft FROM financial_trans WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v;
+                        SET sum_amount_ft = amount_ft + new_amount_cfc;
+                        UPDATE financial_trans SET amount = sum_amount_ft WHERE id = ftID;
+                    ELSE
+                        INSERT INTO financial_trans (moduleid, tranid, admno, amount, crdr, tranDate, acadYear, Entrymode, voucherno, brid, type_of_concession)
+                        VALUES (ModuleID_v, 1, admno_v, new_amount_cfc, crdr_v, date_v, academic_year_v, entry_mode_v, voucher_no_v, braId, additional_for_concessionct_v);
+                        SELECT id , amount INTO ftID,amount_ft FROM financial_trans WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v;
+                    END IF;
+                INSERT INTO financial_transdetails (financialTranId, moduleId, headId, head_name, amount, brid, crdr)
+                VALUES (ftID, ModuleID_v, feeTypeId, fname, new_amount_cfc, braId, crdr_v);
+            END IF;
+    END WHILE;
+    END$$
+DELIMITER ;

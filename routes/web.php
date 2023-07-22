@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\CsvImport;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     //return view('welcome');
+// });
+
+Route::get('/', [CsvImport::class, 'index']);
+Route::post('/store', [CsvImport::class, 'store'])->name('csvimport.store');
