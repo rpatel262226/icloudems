@@ -27,7 +27,7 @@ return new class extends Migration
             $table->unsignedBigInteger('brid');
             $table->bigInteger('type_of_concession')->nullable();            
             $table->timestamps();
-            $table->index(['admno','crdr','Entrymode','brid']);
+            $table->index(['admno','crdr','Entrymode','brid','voucherno']);
             $table->foreign('brid')->references('id')->on('branches')->onDelete('cascade');
         });
     }
