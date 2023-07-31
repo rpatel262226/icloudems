@@ -10,7 +10,7 @@
                 <div class="col-md-12">
                     <div class="input-group">
                         <input type="hidden" id="filename" name="filename" value="">
-                        <input type="file" id="fileInput"  name="file" class="form-control form-control-sm" accept=".csv" style="border:none">
+                        <input type="file" id="fileInput" required  name="file" class="form-control form-control-sm" accept=".csv" style="border:none">
                         <div class="input-group-btn" >
                             <button type="submit" name="submit" class="btn btn-primary">UPLOAD</button>
                         </div>
