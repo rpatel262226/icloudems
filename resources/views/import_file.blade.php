@@ -45,17 +45,17 @@
             $("#uploadForm").on('submit', function(e){
                 e.preventDefault();
                 $.ajax({
-                    // xhr: function() {
-                    //     var xhr = new window.XMLHttpRequest();
-                    //     xhr.upload.addEventListener("progress", function(evt) {
-                    //         if (evt.lengthComputable) {
-                    //             var percentComplete = ((evt.loaded / evt.total) * 100);
-                    //             $(".progress-bar").width(percentComplete.toFixed() + '%');
-                    //             $(".progress-bar").html(percentComplete.toFixed() +'%');
-                    //         }
-                    //     }, false);
-                    //     return xhr;
-                    // },
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function(evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = ((evt.loaded / evt.total) * 100);
+                                $(".progress-bar").width(percentComplete.toFixed() + '%');
+                                $(".progress-bar").html(percentComplete.toFixed() +'%');
+                            }
+                        }, false);
+                        return xhr;
+                    },
                     type: 'POST',
                     url: "{{route('csvimport.store')}}",
                     data: new FormData(this),

@@ -145,31 +145,31 @@ BEGIN
             
             IF table_for_entry_v = 'common_fee_collections' THEN
                
-                SELECT COUNT(*) FROM common_fee_collections WHERE rollno COLLATE utf8mb4_unicode_ci = roll_no_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v INTO coFeeCollCount;
+                SELECT COUNT(*) FROM common_fee_collections WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v INTO coFeeCollCount;
                 IF coFeeCollCount > 0 THEN
-                    SELECT id , amount INTO coFeeCollId,amount_cfc FROM common_fee_collections WHERE rollno COLLATE utf8mb4_unicode_ci = roll_no_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v;
+                    SELECT id , amount INTO coFeeCollId,amount_cfc FROM common_fee_collections WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v;
                     SET sum_amount_cfc = amount_cfc + new_amount_cfc;
                     UPDATE common_fee_collections SET amount = sum_amount_cfc WHERE id = coFeeCollId;
                 ELSE
                     INSERT INTO common_fee_collections (moduleId, transId, admno, rollno, amount, brId, acadamicYear, financialYear, displayReceiptNo, Entrymode, PaidDate, inactive)
                     VALUES (ModuleID_v, 1, admno_v, roll_no_v, new_amount_cfc, braId, academic_year_v,session_v,receipt_no_v , entry_mode_v, date_v, additional_for_actInact_v);
-                    SELECT id,amount INTO coFeeCollId,amount_cfc FROM common_fee_collections WHERE rollno COLLATE utf8mb4_unicode_ci = roll_no_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v;
+                    SELECT id,amount INTO coFeeCollId,amount_cfc FROM common_fee_collections WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND PaidDate COLLATE utf8mb4_unicode_ci = date_v AND Entrymode = entry_mode_v;
                 END IF;
                 INSERT INTO common_fee_collection_headwises (moduleId, receiptId, headId, headName, amount, brid) VALUES(ModuleID_v,coFeeCollId,feeTypeId,fname, new_amount_cfc,braId);
             
             END IF;
 
             IF table_for_entry_v = 'financial_trans' THEN
-                SELECT COUNT(*) FROM financial_trans WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v INTO ftCount;
+                SELECT COUNT(*) FROM financial_trans WHERE voucherno = voucher_no_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v INTO ftCount;
                 
                 IF ftCount > 0 THEN
-                    SELECT id , amount INTO ftID,amount_ft FROM financial_trans WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v;
+                    SELECT id , amount INTO ftID,amount_ft FROM financial_trans WHERE voucherno = voucher_no_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v;
                         SET sum_amount_ft = amount_ft + new_amount_cfc;
                         UPDATE financial_trans SET amount = sum_amount_ft WHERE id = ftID;
                     ELSE
                         INSERT INTO financial_trans (moduleid, tranid, admno, amount, crdr, tranDate, acadYear, Entrymode, voucherno, brid, type_of_concession)
                         VALUES (ModuleID_v, 1, admno_v, new_amount_cfc, crdr_v, date_v, academic_year_v, entry_mode_v, voucher_no_v, braId, additional_for_concessionct_v);
-                        SELECT id , amount INTO ftID,amount_ft FROM financial_trans WHERE admno COLLATE utf8mb4_unicode_ci = admno_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v;
+                        SELECT id , amount INTO ftID,amount_ft FROM financial_trans WHERE voucherno = voucher_no_v AND brId = braId AND crdr COLLATE utf8mb4_unicode_ci = crdr_v AND Entrymode = entry_mode_v;
                     END IF;
                 INSERT INTO financial_transdetails (financialTranId, moduleId, headId, head_name, amount, brid, crdr)
                 VALUES (ftID, ModuleID_v, feeTypeId, fname, new_amount_cfc, braId, crdr_v);

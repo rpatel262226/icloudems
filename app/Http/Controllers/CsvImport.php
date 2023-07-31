@@ -30,15 +30,18 @@ class CsvImport extends Controller
 
     public function store(Request $request) {
         ini_set('max_execution_time', 0); 
-        CsvTemp::truncate();
-        Branch::truncate();
-        CommonFeeCollection::truncate();
-        CommonFeeCollectionHeadwise::truncate();
-        FeeType::truncate();
-        FeeCategory::truncate();
-        FeeCollectionType::truncate();
-        FinancialTran::truncate();
-        FinancialTransdetail::truncate();
+        // CsvTemp::truncate();
+        // DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        //     Branch::truncate();
+        //     Branch::truncate();
+        //     CommonFeeCollection::truncate();
+        //     CommonFeeCollectionHeadwise::truncate();
+        //     FeeType::truncate();
+        //     FeeCategory::truncate();
+        //     FeeCollectionType::truncate();
+        //     FinancialTran::truncate();
+        //     FinancialTransdetail::truncate();
+        // DB::statement('SET FOREIGN_KEY_CHECKS=1;');
        
         $upload=$request->file('file');
         $filePath=$upload->getRealPath();
@@ -87,11 +90,13 @@ class CsvImport extends Controller
        
         try {
             $chunkSize = 500;
-            
+            die;
             foreach (array_chunk($Insdata, $chunkSize) as $chunk) {
                 CsvTemp::insert($chunk);
+                // $callProc = DB::select('call csvImpTodb()');
+                // DB::table('csv_temp')->delete();
             }
-            $callProc = DB::select('call csvImpTodb()');
+            
             echo "ok";
           } catch (Exception $e) {
             return json_encode($e);
